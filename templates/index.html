@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Interview Challenge | Alex Rivera (Staff AI Simulation Bot)</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Highlight.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Marked.js for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-layout">
+        <!-- TOP APP BAR -->
+        <header class="navbar">
+            <div class="navbar-left">
+                <div class="interviewer-profile">
+                    <div class="avatar-ring">
+                        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=AlexRiveraOOP&backgroundColor=1e293b" alt="Alex Rivera" class="avatar-img">
+                        <span class="status-dot" title="Interviewer Ready"></span>
+                    </div>
+                    <div class="profile-meta">
+                        <div class="name-line">
+                            <span class="interviewer-name">Alex Rivera</span>
+                            <span class="badge staff-badge">Staff Tech Lead</span>
+                            <span class="badge challenge-badge"><i class="fa-solid fa-bolt"></i> Adaptive Challenge</span>
+                        </div>
+                        <span class="role-desc">Interactive FAANG Mock Interview Simulation Bot</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADAPTIVE HUD IN NAVBAR -->
+            <div class="navbar-center">
+                <div class="adaptive-hud-pill">
+                    <div class="hud-item tier-pill" id="hudTierPill" title="Current Adaptive Difficulty Bracket">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span id="hudTierLabel">Level 2: Mid-Level</span>
+                    </div>
+                    <div class="hud-item rating-pill" title="Real-time Candidate Elo Rating">
+                        <i class="fa-solid fa-chart-line text-cyan"></i>
+                        <span id="hudRatingLabel">1,250 Rating</span>
+                    </div>
+                    <div class="hud-item streak-pill" title="Strong Performance Streak">
+                        <i class="fa-solid fa-fire text-amber"></i>
+                        <span id="hudStreakLabel">0 Streak</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-right">
+                <div class="timer-pill" id="interviewTimer">
+                    <i class="fa-regular fa-clock"></i>
+                    <span id="timerDisplay">00:00</span>
+                </div>
+                <button class="nav-btn" id="voiceToggleBtn" title="Toggle Interviewer Speech (TTS)">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button class="nav-btn" id="cheatSheetBtn" title="OOP & Architecture Reference">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span class="btn-text">Cheat Sheet</span>
+                </button>
+                <button class="nav-btn" id="settingsBtn" title="Interview Challenge Settings">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span class="btn-text">Config</span>
+                </button>
+                <button class="action-btn score-btn" id="finishInterviewBtn">
+                    <i class="fa-solid fa-award"></i>
+                    <span>Scorecard</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN SPLIT WORKSPACE -->
+        <div class="workspace-grid">
+            <!-- LEFT CONTROL PANEL / SIDEBAR -->
+            <aside class="control-sidebar">
+                <!-- Adaptive Status Panel -->
+                <div class="glass-card status-panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-solid fa-gauge-high"></i> Adaptive Meter</span>
+                        <span class="difficulty-tag" id="metaDifficulty">Mid-Level</span>
+                    </div>
+
+                    <!-- Level Progression Ladder -->
+                    <div class="level-ladder">
+                        <div class="ladder-step" id="ladderStep1">
+                            <span class="step-num">L1</span>
+                            <span class="step-title">Junior</span>
+                        </div>
+                        <div class="ladder-step active" id="ladderStep2">
+                            <span class="step-num">L2</span>
+                            <span class="step-title">Mid-Level</span>
+                        </div>
+                        <div class="ladder-step" id="ladderStep3">
+                            <span class="step-num">L3</span>
+                            <span class="step-title">Senior</span>
+                        </div>
+                        <div class="ladder-step" id="ladderStep4">
+                            <span class="step-num">L4</span>
+                            <span class="step-title">Staff</span>
+                        </div>
+                    </div>
+                    
+                    <div class="status-row" style="margin-top: 10px;">
+                        <span class="status-label">Domain</span>
+                        <span class="status-value" id="metaTopic">All Topics</span>
+                    </div>
+
+                    <div class="status-row">
+                        <span class="status-label">Simulation Mode</span>
+                        <span class="status-value text-accent" id="metaMode">Adaptive Difficulty</span>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-labels">
+                            <span class="status-label">Challenge Questions</span>
+                            <span class="progress-count" id="metaProgress">0 / 5</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" id="progressBarFill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Question Roadmap -->
+                <div class="glass-card roadmap-panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-solid fa-list-check"></i> Interview Trajectory</span>
+                    </div>
+                    <ul class="roadmap-list" id="questionRoadmapList">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Candidate Toolbox -->
+                <div class="glass-card tools-panel">
+                    <div class="panel-header">
+                        <span class="panel-title"><i class="fa-solid fa-toolbox"></i> Simulation Tools</span>
+                    </div>
+                    <div class="tools-actions">
+                        <button class="tool-action-btn curveball-tool-btn" id="sidebarCurveballBtn">
+                            <div class="btn-icon curve-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                            <div class="btn-details">
+                                <span class="tool-label">Request Curveball Twist</span>
+                                <span class="tool-sub">In-flight scale constraint</span>
+                            </div>
+                        </button>
+
+                        <button class="tool-action-btn" id="sidebarHintBtn">
+                            <div class="btn-icon hint-icon"><i class="fa-regular fa-lightbulb"></i></div>
+                            <div class="btn-details">
+                                <span class="tool-label">Request Hint</span>
+                                <span class="tool-sub" id="hintsRemainingBadge">Available</span>
+                            </div>
+                        </button>
+                        
+                        <button class="tool-action-btn" id="sidebarModelAnswerBtn">
+                            <div class="btn-icon answer-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="btn-details">
+                                <span class="tool-label">Model Solution</span>
+                                <span class="tool-sub">Reveal ideal answer</span>
+                            </div>
+                        </button>
+                        
+                        <button class="tool-action-btn subtle" id="newInterviewBtn">
+                            <div class="btn-icon reset-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                            <div class="btn-details">
+                                <span class="tool-label">Restart Simulation</span>
+                                <span class="tool-sub">Reconfigure challenge</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CHAT & WORKSPACE -->
+            <main class="chat-workspace">
+                <!-- Chat Transcript Feed -->
+                <div class="transcript-feed" id="messagesContainer">
+                    <!-- Dynamic conversation entries -->
+                </div>
+
+                <!-- Bottom Input Dock -->
+                <div class="input-dock-container">
+                    <div class="input-dock-card">
+                        <div class="dock-editor-wrapper">
+                            <textarea 
+                                id="answerInput" 
+                                placeholder="Explain your architectural design, data structures, and trade-offs... (Ctrl + Enter to submit)"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <div class="dock-controls-bar">
+                            <div class="dock-left-tools">
+                                <button class="pill-btn" id="micBtn" title="Dictate answer with speech recognition">
+                                    <i class="fa-solid fa-microphone"></i>
+                                    <span class="mic-label">Dictate</span>
+                                </button>
+                                <button class="pill-btn" id="insertCodeSnippetBtn" title="Insert formatted code template">
+                                    <i class="fa-solid fa-code"></i>
+                                    <span>Code Block</span>
+                                </button>
+                                <span class="word-counter" id="charCount">0 words</span>
+                            </div>
+
+                            <div class="dock-right-actions">
+                                <button class="secondary-btn" id="passBtn" title="Pass this question to review model solution">
+                                    <span>Pass</span>
+                                </button>
+                                <button class="submit-btn" id="submitBtn">
+                                    <span>Submit Answer</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: SETTINGS & CONFIG -->
+    <div class="modal-backdrop" id="settingsModal">
+        <div class="modal-box">
+            <div class="modal-top">
+                <div class="modal-title-group">
+                    <div class="modal-icon"><i class="fa-solid fa-sliders"></i></div>
+                    <div>
+                        <h3>Simulation Configuration</h3>
+                        <p class="modal-subtitle">Choose challenge mode, focus domain, and AI capability.</p>
+                    </div>
+                </div>
+                <button class="close-x-btn" id="closeSettingsModal">&times;</button>
+            </div>
+            
+            <div class="modal-content-body">
+                <div class="input-group">
+                    <label for="difficultySelect">Challenge Mode & Adaptation Strategy</label>
+                    <select id="difficultySelect" class="styled-select">
+                        <option value="adaptive" selected>🎯 Adaptive Simulation (Difficulty scales up/down based on performance)</option>
+                        <option value="Staff / Principal">⚡ Staff Gauntlet (Immediate Level 4 High-Scale Challenges)</option>
+                        <option value="Senior / Lead">💎 Senior Track (Level 3 Architecture & SOLID)</option>
+                        <option value="Mid-Level">🚀 Mid-Level Track (Level 2 Pillars & Patterns)</option>
+                        <option value="Junior">🌱 Foundational Track (Level 1 OOP Basics)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="topicSelect">Focus Domain</label>
+                    <select id="topicSelect" class="styled-select">
+                        <option value="all">Comprehensive (All Topics: Pillars, SOLID, Patterns, Systems)</option>
+                        <option value="core_pillars">The 4 Pillars (Encapsulation, Abstraction, Inheritance, Polymorphism)</option>
+                        <option value="solid">SOLID Design Principles</option>
+                        <option value="design_patterns">Design Patterns (Creational, Structural, Behavioral)</option>
+                        <option value="advanced_oop">Advanced Architecture (Composition, Memory, Diamond, Immutability)</option>
+                        <option value="code_challenges">System Design & Refactoring Challenges</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="numQuestionsSelect">Simulation Length</label>
+                    <select id="numQuestionsSelect" class="styled-select">
+                        <option value="3">Quick Drill (3 Questions)</option>
+                        <option value="5" selected>Standard Technical Screen (5 Questions)</option>
+                        <option value="8">Full Onsite Simulation (8 Questions)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <div class="label-with-hint">
+                        <label for="geminiApiKey">Gemini API Key (Optional)</label>
+                        <span class="sub-hint">Powers Staff Interviewer Debriefs</span>
+                    </div>
+                    <input type="password" id="geminiApiKey" class="styled-input" placeholder="AIzaSy... (leave blank for offline semantic engine)">
+                    <p class="field-explanation">
+                        <i class="fa-solid fa-wand-magic-sparkles text-accent"></i> 
+                        Zero-latency semantic evaluation works 100% offline. Adding your Gemini API key activates the manual <strong>"Consult Simulation Interviewer"</strong> and real-time <strong>Curveball Twists</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary-btn" id="cancelSettingsBtn">Cancel</button>
+                <button class="primary-btn" id="applySettingsBtn">Start Adaptive Challenge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CANDIDATE SCORECARD -->
+    <div class="modal-backdrop" id="scorecardModal">
+        <div class="modal-box wide-modal">
+            <div class="modal-top">
+                <div class="modal-title-group">
+                    <div class="modal-icon gold"><i class="fa-solid fa-award"></i></div>
+                    <div>
+                        <h3>Adaptive Simulation Scorecard & Debrief</h3>
+                        <p class="modal-subtitle">Calibrated FAANG hiring recommendation, skill progression, and domain breakdown.</p>
+                    </div>
+                </div>
+                <button class="close-x-btn" id="closeScorecardModal">&times;</button>
+            </div>
+
+            <div class="modal-content-body" id="scorecardBody">
+                <!-- Dynamically generated scorecard content -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary-btn" id="copyReportBtn">
+                    <i class="fa-regular fa-copy"></i> Copy Markdown Report
+                </button>
+                <button class="primary-btn" id="restartFromScorecardBtn">
+                    <i class="fa-solid fa-rotate-right"></i> Start Another Challenge
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRAWER: OOP REFERENCE CHEAT SHEET -->
+    <div class="drawer-backdrop" id="cheatSheetDrawer">
+        <div class="drawer-content">
+            <div class="drawer-top">
+                <div class="drawer-header-info">
+                    <i class="fa-solid fa-book-open-reader text-accent"></i>
+                    <h3>OOP & SOLID Architecture Reference</h3>
+                </div>
+                <button class="close-x-btn" id="closeCheatSheetDrawer">&times;</button>
+            </div>
+
+            <div class="drawer-scroll-body">
+                <div class="cheat-card">
+                    <h4>The 4 Pillars of OOP</h4>
+                    <div class="cheat-item">
+                        <strong>Encapsulation</strong>
+                        <p>Bundling state with methods while restricting direct external access to preserve invariants.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>Abstraction</strong>
+                        <p>Hiding implementation details and presenting only essential, high-level interfaces.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>Inheritance</strong>
+                        <p>Deriving new classes from existing ones to share behavior and establish 'IS-A' taxonomies.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>Polymorphism</strong>
+                        <p>Providing a uniform interface for different underlying types (compile-time overloading, runtime vtables).</p>
+                    </div>
+                </div>
+
+                <div class="cheat-card">
+                    <h4>SOLID Principles</h4>
+                    <div class="cheat-item">
+                        <strong>S — Single Responsibility</strong>
+                        <p>A module or class should have only one reason to change, serving a single stakeholder.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>O — Open/Closed</strong>
+                        <p>Software entities should be open for extension but closed for modification.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>L — Liskov Substitution</strong>
+                        <p>Subtypes must be substitutable for supertypes without breaking program invariants.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>I — Interface Segregation</strong>
+                        <p>Clients shouldn't be forced to depend on methods they do not consume.</p>
+                    </div>
+                    <div class="cheat-item">
+                        <strong>D — Dependency Inversion</strong>
+                        <p>High-level policy should depend on abstractions, not on concrete low-level details.</p>
+                    </div>
+                </div>
+
+                <div class="cheat-card">
+                    <h4>GoF Design Patterns</h4>
+                    <div class="cheat-item">
+                        <strong>Creational:</strong> Factory Method, Abstract Factory, Builder, Singleton.
+                    </div>
+                    <div class="cheat-item">
+                        <strong>Structural:</strong> Adapter, Decorator, Facade, Composite, Proxy.
+                    </div>
+                    <div class="cheat-item">
+                        <strong>Behavioral:</strong> Strategy, Observer, Command, State, Template Method.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
