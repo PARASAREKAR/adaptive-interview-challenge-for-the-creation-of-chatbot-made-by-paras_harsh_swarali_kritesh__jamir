@@ -16,7 +16,1540 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+/* ==========================================================================
+   ALEX RIVERA | ADAPTIVE INTERVIEW CHALLENGE - MODERN UI STYLES (v2)
+   Features:
+   - Deep obsidian dark mode with indigo/violet/cyan gradients
+   - Live Adaptive HUD: Difficulty Level Ladder, Skill Rating (Elo), Streak
+   - Interactive Interviewer Curveball Twist cards
+   - Staff-level Simulation Debrief styling & Hiring Committee Scorecard
+   ========================================================================== */
+
+:root {
+    --bg-base: #07090e;
+    --bg-surface: #0e131f;
+    --bg-surface-elevated: #141c2e;
+    --bg-card: rgba(18, 26, 44, 0.75);
+    --bg-card-hover: rgba(26, 37, 62, 0.88);
+    
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-medium: rgba(255, 255, 255, 0.14);
+    --border-accent: rgba(99, 102, 241, 0.4);
+    --border-ai: rgba(168, 85, 247, 0.45);
+    --border-curveball: rgba(245, 158, 11, 0.45);
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --accent-indigo: #6366f1;
+    --accent-indigo-hover: #4f46e5;
+    --accent-violet: #8b5cf6;
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: 'Fira Code', monospace;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.25);
+    --shadow-ai-glow: 0 0 30px rgba(168, 85, 247, 0.25);
+    --shadow-curveball-glow: 0 0 25px rgba(245, 158, 11, 0.2);
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.55;
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background: radial-gradient(circle at 10% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 100%, rgba(139, 92, 246, 0.06) 0%, transparent 40%);
+}
+
+/* --------------------------------------------------------------------------
+   NAVBAR HEADER & ADAPTIVE HUD
+   -------------------------------------------------------------------------- */
+.navbar {
+    height: 68px;
+    background: rgba(14, 19, 31, 0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 20;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.interviewer-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.avatar-ring {
+    position: relative;
+    width: 44px;
+    height: 44px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(99, 102, 241, 0.5);
+    background: var(--bg-surface-elevated);
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--accent-emerald);
+    border: 2px solid var(--bg-surface);
+    box-shadow: 0 0 8px var(--accent-emerald);
+}
+
+.profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.interviewer-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.staff-badge {
+    background: rgba(99, 102, 241, 0.16);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.challenge-badge {
+    background: rgba(6, 182, 212, 0.16);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(6, 182, 212, 0.35);
+}
+
+.role-desc {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+/* NAVBAR CENTER ADAPTIVE HUD */
+.navbar-center {
+    display: flex;
+    align-items: center;
+}
+
+.adaptive-hud-pill {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-medium);
+    border-radius: 999px;
+    padding: 3px 6px;
+    gap: 4px;
+}
+
+.hud-item {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tier-pill {
+    background: rgba(99, 102, 241, 0.16);
+    color: #c7d2fe;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.rating-pill {
+    font-family: var(--font-mono);
+    color: var(--accent-cyan);
+}
+
+.streak-pill {
+    color: var(--accent-amber);
+}
+
+.text-cyan { color: var(--accent-cyan); }
+.text-amber { color: var(--accent-amber); }
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timer-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-medium);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+    border-color: var(--border-medium);
+}
+
+.nav-btn.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    border-color: var(--accent-indigo);
+}
+
+.action-btn {
+    border: none;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.score-btn {
+    background: linear-gradient(135deg, var(--accent-indigo), var(--accent-violet));
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.score-btn:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   WORKSPACE GRID & CONTROL SIDEBAR
+   -------------------------------------------------------------------------- */
+.workspace-grid {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.control-sidebar {
+    width: 320px;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 14px;
+    overflow-y: auto;
+}
+
+.glass-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.panel-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.difficulty-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* LEVEL PROGRESSION LADDER */
+.level-ladder {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    margin: 8px 0;
+}
+
+.ladder-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    transition: all 0.25s ease;
+}
+
+.ladder-step .step-num {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.72rem;
+}
+
+.ladder-step.active {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--accent-indigo);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+}
+
+.status-label {
+    color: var(--text-muted);
+}
+
+.status-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    color: var(--accent-indigo);
+}
+
+.progress-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Roadmap List */
+.roadmap-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 190px;
+}
+
+.roadmap-list {
+    list-style: none;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.roadmap-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.roadmap-item.active {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.35);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.roadmap-item.completed {
+    color: var(--text-primary);
+}
+
+.roadmap-status-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+}
+
+.roadmap-item.completed .roadmap-status-icon {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-emerald);
+}
+
+.roadmap-item.active .roadmap-status-icon {
+    background: rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+}
+
+.roadmap-item.pending .roadmap-status-icon {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+}
+
+.roadmap-score-pill {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+    font-weight: 600;
+}
+
+/* Candidate Tools */
+.tools-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tool-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.tool-action-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--border-medium);
+}
+
+.btn-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.curve-icon {
+    background: rgba(245, 158, 11, 0.18);
+    color: var(--accent-amber);
+}
+
+.hint-icon {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--accent-cyan);
+}
+
+.answer-icon {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-indigo);
+}
+
+.reset-icon {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+}
+
+.btn-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tool-sub {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   CHAT WORKSPACE & TRANSCRIPT FEED
+   -------------------------------------------------------------------------- */
+.chat-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-base);
+    overflow: hidden;
+}
+
+.transcript-feed {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+}
+
+.message-row {
+    display: flex;
+    gap: 14px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    animation: messageFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes messageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-row.candidate {
+    flex-direction: row-reverse;
+}
+
+.msg-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid var(--border-medium);
+}
+
+.msg-avatar img {
+    width: 100%;
+    height: 100%;
+    background: var(--bg-surface-elevated);
+}
+
+.msg-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.msg-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.msg-sender {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.msg-bubble {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    box-shadow: var(--shadow-soft);
+}
+
+.candidate .msg-bubble {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Question Banner in Interviewer message */
+.question-hero-banner {
+    background: rgba(14, 21, 37, 0.9);
+    border-left: 4px solid var(--accent-indigo);
+    padding: 14px 18px;
+    border-radius: 4px var(--radius-sm) var(--radius-sm) 4px;
+    margin-bottom: 12px;
+}
+
+.question-tags-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.q-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.q-tag.topic {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--accent-cyan);
+}
+
+.q-tag.difficulty {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+}
+
+/* INTERVIEWER CURVEBALL CARD */
+.curveball-box {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(14, 21, 37, 0.9));
+    border: 1px dashed var(--border-curveball);
+    border-left: 4px solid var(--accent-amber);
+    padding: 14px 18px;
+    border-radius: 4px var(--radius-sm) var(--radius-sm) 4px;
+    margin-top: 12px;
+    box-shadow: var(--shadow-curveball-glow);
+}
+
+.curveball-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-amber);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+.curveball-body {
+    font-size: 0.88rem;
+    color: #fef3c7;
+    line-height: 1.5;
+}
+
+/* ADAPTIVE SHIFT BANNER */
+.adaptive-shift-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    animation: bannerPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes bannerPop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.adaptive-shift-banner.level_up {
+    background: rgba(16, 185, 129, 0.14);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #a7f3d0;
+}
+
+.adaptive-shift-banner.scaffold {
+    background: rgba(244, 63, 94, 0.14);
+    border: 1px solid rgba(244, 63, 94, 0.35);
+    color: #fecdd3;
+}
+
+.adaptive-shift-banner.maintain {
+    background: rgba(99, 102, 241, 0.14);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    color: #c7d2fe;
+}
+
+.shift-icon {
+    font-size: 1.1rem;
+}
+
+/* --------------------------------------------------------------------------
+   EVALUATION & MANUAL SIMULATION BOT DEBRIEF CARDS
+   -------------------------------------------------------------------------- */
+.eval-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-soft);
+}
+
+.eval-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 12px;
+}
+
+.score-display {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-family: var(--font-mono);
+}
+
+.score-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent-emerald);
+}
+
+.score-denominator {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.rating-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.rating-badge.strong {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.rating-badge.moderate {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.rating-badge.poor {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
+    border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.eval-critique-box {
+    font-size: 0.92rem;
+    color: #cbd5e1;
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--accent-indigo);
+}
+
+.eval-feedback-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.feedback-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.feedback-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.feedback-title.strengths { color: var(--accent-emerald); }
+.feedback-title.improvements { color: var(--accent-amber); }
+
+.feedback-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.feedback-list li {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.feedback-list li i {
+    font-size: 0.75rem;
+    margin-top: 5px;
+}
+
+.follow-up-card {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px dashed rgba(99, 102, 241, 0.35);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.88rem;
+}
+
+/* MANUAL SIMULATION BOT TRIGGER BUTTON */
+.ai-trigger-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.ai-enhance-btn {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 16px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ai-enhance-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+}
+
+.ai-enhance-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* DISTINCT AI SIMULATION DEBRIEF CARD */
+.ai-analysis-card {
+    background: linear-gradient(180deg, rgba(30, 20, 50, 0.88), rgba(18, 22, 38, 0.88));
+    border: 1px solid var(--border-ai);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-ai-glow);
+    animation: aiCardFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aiCardFade {
+    from { opacity: 0; transform: scale(0.98) translateY(6px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.ai-analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+    padding-bottom: 12px;
+}
+
+.ai-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-spark-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+}
+
+.ai-header-titles h4 {
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: #f3e8ff;
+}
+
+.ai-header-titles span {
+    font-size: 0.72rem;
+    color: #c084fc;
+}
+
+.hiring-verdict-badge {
+    font-family: var(--font-mono);
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.2);
+    color: #a7f3d0;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.ai-critique-text {
+    font-size: 0.94rem;
+    line-height: 1.65;
+    color: #f1f5f9;
+}
+
+.ai-insight-box {
+    background: rgba(168, 85, 247, 0.1);
+    border-left: 3px solid #a855f7;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.86rem;
+    color: #e9d5ff;
+}
+
+.ai-suggestions-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ai-suggestions-list li {
+    font-size: 0.86rem;
+    color: #cbd5e1;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.ai-suggestions-list li i {
+    color: #c084fc;
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   INPUT DOCK
+   -------------------------------------------------------------------------- */
+.input-dock-container {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    padding: 16px 24px;
+}
+
+.input-dock-card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-base);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.input-dock-card:focus-within {
+    border-color: var(--accent-indigo);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+#answerInput {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 65px;
+    outline: none;
+}
+
+#answerInput::placeholder {
+    color: var(--text-muted);
+}
+
+.dock-controls-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 8px;
+}
+
+.dock-left-tools, .dock-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pill-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.pill-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.pill-btn.recording {
+    background: rgba(244, 63, 94, 0.2);
+    border-color: var(--accent-rose);
+    color: var(--accent-rose);
+    animation: micGlow 1.2s infinite;
+}
+
+@keyframes micGlow {
+    0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+    70% { box-shadow: 0 0 0 8px rgba(244, 63, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+}
+
+.word-counter {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.submit-btn {
+    background: var(--accent-indigo);
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+    background: var(--accent-indigo-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   MODALS & DRAWERS
+   -------------------------------------------------------------------------- */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(2, 6, 23, 0.82);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: modalBgFade 0.2s ease;
+}
+
+@keyframes modalBgFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-box {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 560px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-box.wide-modal {
+    max-width: 800px;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(12px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.modal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-indigo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.modal-icon.gold {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+}
+
+.modal-title-group h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.modal-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.close-x-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close-x-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-content-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.label-with-hint {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.sub-hint {
+    font-size: 0.72rem;
+    color: #c084fc;
+}
+
+.styled-select, .styled-input {
+    background: var(--bg-base);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.styled-select:focus, .styled-input:focus {
+    border-color: var(--accent-indigo);
+}
+
+.field-explanation {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+.text-accent {
+    color: #a855f7;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-subtle);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.primary-btn {
+    background: var(--accent-indigo);
+    color: #ffffff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.primary-btn:hover {
+    background: var(--accent-indigo-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+/* --------------------------------------------------------------------------
+   DRAWER (CHEAT SHEET)
+   -------------------------------------------------------------------------- */
+.drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: flex-end;
+    z-index: 100;
+}
+
+.drawer-content {
+    width: 440px;
+    height: 100vh;
+    background: var(--bg-surface-elevated);
+    border-left: 1px solid var(--border-medium);
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawerSlide {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.drawer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.drawer-header-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.drawer-header-info h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.drawer-scroll-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cheat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+}
+
+.cheat-card h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-indigo);
+    margin-bottom: 12px;
+}
+
+.cheat-item {
+    margin-bottom: 10px;
+}
+
+.cheat-item strong {
+    display: block;
+    font-size: 0.84rem;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.cheat-item p {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------
+   SCORECARD STYLES
+   -------------------------------------------------------------------------- */
+.scorecard-banner {
+    text-align: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-subtle);
+}
+
+.scorecard-calibrated-level {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+
+.scorecard-verdict {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.scorecard-score-big {
+    font-size: 3.2rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin: 6px 0;
+}
+
+.trajectory-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.trajectory-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 0.82rem;
+}
+
+.topic-bars-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.topic-bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.topic-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+</style>
 </head>
 <body class="dark-theme">
     <div class="app-layout">
@@ -399,6 +1932,929 @@
     </div>
 
     <!-- Application Script -->
-    <script src="/static/app.js"></script>
+    <script>
+/**
+ * ALEX RIVERA | ADAPTIVE INTERVIEW CHALLENGE - CLIENT SIMULATION ENGINE (v2)
+ * Features:
+ * - Dynamic Difficulty Adaptation (Junior -> Mid-Level -> Senior -> Staff)
+ * - Real-time Elo-style Skill Rating & Streak Tracking
+ * - In-flight Interviewer Curveballs & Production Constraints
+ * - Manual on-demand Staff AI Debriefs ("Consult Simulation Interviewer")
+ * - Calibrated FAANG Hiring Recommendation Scorecard
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    // -------------------------------------------------------------------------
+    // APPLICATION STATE
+    // -------------------------------------------------------------------------
+    let sessionId = null;
+    let currentQuestion = null;
+    let questionsRoadmap = [];
+    let voiceEnabled = false;
+    let isRecording = false;
+    let recognition = null;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let apiKey = localStorage.getItem("oop_gemini_api_key") || "";
+
+    // Adaptive HUD State
+    let currentTier = "Mid-Level";
+    let currentLevel = 2;
+    let skillRating = 1250;
+    let streakCount = 0;
+    let isAdaptive = true;
+
+    // -------------------------------------------------------------------------
+    // DOM ELEMENTS
+    // -------------------------------------------------------------------------
+    const messagesContainer = document.getElementById("messagesContainer");
+    const answerInput = document.getElementById("answerInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const passBtn = document.getElementById("passBtn");
+    const micBtn = document.getElementById("micBtn");
+    const insertCodeSnippetBtn = document.getElementById("insertCodeSnippetBtn");
+    const charCount = document.getElementById("charCount");
+    const timerDisplay = document.getElementById("timerDisplay");
+    const voiceToggleBtn = document.getElementById("voiceToggleBtn");
+
+    // Adaptive HUD in Navbar
+    const hudTierLabel = document.getElementById("hudTierLabel");
+    const hudRatingLabel = document.getElementById("hudRatingLabel");
+    const hudStreakLabel = document.getElementById("hudStreakLabel");
+
+    // Sidebar
+    const metaTopic = document.getElementById("metaTopic");
+    const metaDifficulty = document.getElementById("metaDifficulty");
+    const metaMode = document.getElementById("metaMode");
+    const metaProgress = document.getElementById("metaProgress");
+    const progressBarFill = document.getElementById("progressBarFill");
+    const questionRoadmapList = document.getElementById("questionRoadmapList");
+    const sidebarHintBtn = document.getElementById("sidebarHintBtn");
+    const hintsRemainingBadge = document.getElementById("hintsRemainingBadge");
+    const sidebarModelAnswerBtn = document.getElementById("sidebarModelAnswerBtn");
+    const sidebarCurveballBtn = document.getElementById("sidebarCurveballBtn");
+    const newInterviewBtn = document.getElementById("newInterviewBtn");
+
+    // Modals & Drawers
+    const settingsModal = document.getElementById("settingsModal");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const closeSettingsModal = document.getElementById("closeSettingsModal");
+    const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
+    const applySettingsBtn = document.getElementById("applySettingsBtn");
+    const geminiApiKeyInput = document.getElementById("geminiApiKey");
+
+    const scorecardModal = document.getElementById("scorecardModal");
+    const finishInterviewBtn = document.getElementById("finishInterviewBtn");
+    const closeScorecardModal = document.getElementById("closeScorecardModal");
+    const scorecardBody = document.getElementById("scorecardBody");
+    const copyReportBtn = document.getElementById("copyReportBtn");
+    const restartFromScorecardBtn = document.getElementById("restartFromScorecardBtn");
+
+    const cheatSheetDrawer = document.getElementById("cheatSheetDrawer");
+    const cheatSheetBtn = document.getElementById("cheatSheetBtn");
+    const closeCheatSheetDrawer = document.getElementById("closeCheatSheetDrawer");
+
+    if (apiKey) geminiApiKeyInput.value = apiKey;
+
+    // -------------------------------------------------------------------------
+    // INITIALIZATION
+    // -------------------------------------------------------------------------
+    initSpeechRecognition();
+    startNewSession();
+
+    // -------------------------------------------------------------------------
+    // SESSION MANAGEMENT
+    // -------------------------------------------------------------------------
+    async function startNewSession() {
+        const topic = document.getElementById("topicSelect").value;
+        const difficulty = document.getElementById("difficultySelect").value;
+        const numQuestions = document.getElementById("numQuestionsSelect").value;
+        apiKey = geminiApiKeyInput.value.trim();
+        if (apiKey) localStorage.setItem("oop_gemini_api_key", apiKey);
+
+        // Reset display
+        messagesContainer.innerHTML = "";
+        questionRoadmapList.innerHTML = "";
+        resetTimer();
+        startTimer();
+
+        metaTopic.textContent = document.getElementById("topicSelect").selectedOptions[0].text.split("(")[0].trim();
+        metaDifficulty.textContent = difficulty === "adaptive" ? "Adaptive Scale" : difficulty;
+        metaMode.textContent = difficulty === "adaptive" ? "Dynamic Escalation" : "Fixed Difficulty";
+
+        // Welcome Greeting
+        appendInterviewerMessage(`### 🎯 Adaptive Interview Challenge Initiated!
+I'm **Alex Rivera**, Staff Software Engineer & Lead Interviewer. You are entering an **Adaptive FAANG Mock Interview Simulation**.
+
+⚡ **How This Challenge Works:**
+1. **Dynamic Escalation:** Your performance dictates the difficulty. High scores (≥8/10) trigger **Level Ups** to Senior/Staff architecture challenges; struggling triggers foundational checks.
+2. **Skill Rating (Elo):** Track your real-time candidate rating and streaks in the top HUD.
+3. **In-Flight Curveballs:** Watch for unexpected production constraints attached to challenges.
+4. **Manual AI Debrief:** Click **"🤖 Consult Simulation Interviewer"** anytime to receive my calibrated hiring decision and architectural feedback.
+
+Let's begin with our first scenario!`);
+
+        try {
+            const res = await fetch("/api/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    topic: topic,
+                    difficulty: difficulty,
+                    num_questions: numQuestions,
+                    api_key: apiKey
+                })
+            });
+            const data = await res.json();
+            sessionId = data.session_id;
+            currentQuestion = data.first_question;
+            isAdaptive = data.is_adaptive;
+            currentTier = data.initial_tier || "Mid-Level";
+            skillRating = data.initial_rating || 1250;
+            streakCount = 0;
+
+            updateAdaptiveHUD(currentTier, 2, skillRating, streakCount);
+
+            // Setup roadmap
+            questionsRoadmap = Array.from({ length: data.total_selected }, (_, i) => ({
+                index: i + 1,
+                title: i === 0 ? currentQuestion.title : `Challenge ${i + 1}`,
+                status: i === 0 ? "active" : "pending",
+                tier: i === 0 ? currentQuestion.difficulty : null,
+                score: null
+            }));
+            renderRoadmap();
+            updateProgress(currentQuestion.index, currentQuestion.total_questions);
+
+            // Present first question
+            presentQuestion(currentQuestion);
+        } catch (err) {
+            console.error("Failed to start session:", err);
+            appendInterviewerMessage("⚠️ Error initializing adaptive session. Please verify backend server is running.");
+        }
+    }
+
+    function updateAdaptiveHUD(tier, levelNum, rating, streak) {
+        currentTier = tier;
+        currentLevel = levelNum;
+        skillRating = rating;
+        streakCount = streak;
+
+        hudTierLabel.textContent = `Level ${levelNum}: ${tier}`;
+        hudRatingLabel.textContent = `${rating.toLocaleString()} Rating`;
+        hudStreakLabel.textContent = `${streak} Streak`;
+        metaDifficulty.textContent = tier;
+
+        // Update ladder dots
+        for (let i = 1; i <= 4; i++) {
+            const stepEl = document.getElementById(`ladderStep${i}`);
+            if (stepEl) {
+                stepEl.classList.toggle("active", i === levelNum);
+            }
+        }
+    }
+
+    function presentQuestion(q) {
+        if (!q) return;
+
+        let content = `### Challenge ${q.index}: ${q.title}
+<div class="question-hero-banner">
+    <div class="question-tags-row">
+        <span class="q-tag topic">${q.topic.replace(/_/g, ' ')}</span>
+        <span class="q-tag difficulty">${q.difficulty}</span>
+        <span class="q-tag" style="background: rgba(99, 102, 241, 0.2); color: #c7d2fe;">Level ${q.level_number || 2}</span>
+    </div>
+    <p>${q.question}</p>
+</div>`;
+
+        if (q.curveball) {
+            content += `
+<div class="curveball-box">
+    <div class="curveball-header">
+        <i class="fa-solid fa-bolt-lightning"></i>
+        <span>Interviewer In-Flight Curveball:</span>
+    </div>
+    <p class="curveball-body">${q.curveball}</p>
+</div>`;
+        }
+
+        if (q.code_snippet) {
+            content += `\n\`\`\`python\n${q.code_snippet}\n\`\`\`\n`;
+        }
+
+        appendInterviewerMessage(content);
+        hintsRemainingBadge.textContent = `${q.total_hints} Left`;
+
+        if (voiceEnabled) {
+            speakText(`Challenge ${q.index}. ${q.title}. ${q.question}`);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // SUBMIT ANSWER & ADAPTIVE DIFFICULTY TRANSITION
+    // -------------------------------------------------------------------------
+    async function handleAnswerSubmission() {
+        const answer = answerInput.value.trim();
+        if (!answer) return;
+
+        appendCandidateMessage(answer);
+        answerInput.value = "";
+        updateCharCount();
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch("/api/submit-answer", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    answer: answer
+                })
+            });
+
+            const data = await res.json();
+            submitBtn.disabled = false;
+
+            if (data.error) {
+                appendInterviewerMessage(`⚠️ ${data.error}`);
+                return;
+            }
+
+            // Update Adaptive HUD with new rating and level
+            if (data.adaptation) {
+                const ad = data.adaptation;
+                updateAdaptiveHUD(ad.new_tier, ad.level_number, ad.skill_rating, ad.streak);
+            }
+
+            // Render evaluation card with adaptive notification banner
+            renderEvaluationCard(data.evaluation, data.adaptation);
+
+            // Update roadmap status
+            const prevIndex = currentQuestion.index - 1;
+            if (questionsRoadmap[prevIndex]) {
+                questionsRoadmap[prevIndex].status = "completed";
+                questionsRoadmap[prevIndex].score = data.evaluation.score;
+                questionsRoadmap[prevIndex].title = currentQuestion.title;
+                questionsRoadmap[prevIndex].tier = currentQuestion.difficulty;
+            }
+
+            // Advance or complete
+            if (data.is_completed) {
+                stopTimer();
+                updateProgress(currentQuestion.total_questions, currentQuestion.total_questions);
+                renderRoadmap();
+                handleInterviewCompletion();
+            } else {
+                currentQuestion = data.next_question;
+                if (questionsRoadmap[currentQuestion.index - 1]) {
+                    questionsRoadmap[currentQuestion.index - 1].status = "active";
+                    questionsRoadmap[currentQuestion.index - 1].title = currentQuestion.title;
+                    questionsRoadmap[currentQuestion.index - 1].tier = currentQuestion.difficulty;
+                }
+                updateProgress(currentQuestion.index, currentQuestion.total_questions);
+                renderRoadmap();
+
+                // Present next question after short delay
+                setTimeout(() => {
+                    presentQuestion(currentQuestion);
+                }, 1700);
+            }
+        } catch (err) {
+            console.error("Submission failed:", err);
+            submitBtn.disabled = false;
+            appendInterviewerMessage("⚠️ Error processing answer. Please try again.");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // RENDER EVALUATION CARD & ADAPTIVE BANNER
+    // -------------------------------------------------------------------------
+    function renderEvaluationCard(evalData, adaptation) {
+        const ratingClass = evalData.score >= 8.0 ? "strong" : evalData.score >= 5.0 ? "moderate" : "poor";
+
+        let bannerHtml = "";
+        if (adaptation && adaptation.message) {
+            const bannerType = adaptation.event.toLowerCase();
+            const icon = adaptation.event === "LEVEL_UP" ? "fa-circle-up" : adaptation.event === "SCAFFOLD" ? "fa-circle-down" : "fa-equals";
+            bannerHtml = `
+<div class="adaptive-shift-banner ${bannerType}">
+    <i class="fa-solid ${icon} shift-icon"></i>
+    <span>${adaptation.message}</span>
+    <span style="margin-left: auto; font-family: var(--font-mono); font-size: 0.76rem;">Rating: ${adaptation.skill_rating} (${adaptation.rating_delta >= 0 ? '+' : ''}${adaptation.rating_delta})</span>
+</div>`;
+        }
+
+        const strengthsHtml = (evalData.strengths || []).map(s => 
+            `<li><i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i> <span>${s}</span></li>`
+        ).join("");
+
+        const improvementsHtml = (evalData.improvements || []).map(imp => 
+            `<li><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-amber);"></i> <span>${imp}</span></li>`
+        ).join("");
+
+        const cardHtml = `
+<div class="eval-card">
+    ${bannerHtml}
+
+    <div class="eval-card-header">
+        <div class="score-display">
+            <span class="score-value">${evalData.score}</span>
+            <span class="score-denominator">/ 10</span>
+        </div>
+        <span class="rating-badge ${ratingClass}">${evalData.rating}</span>
+    </div>
+
+    <div class="eval-critique-box">
+        "${evalData.interviewer_critique}"
+    </div>
+
+    <div class="eval-feedback-grid">
+        ${strengthsHtml ? `
+        <div class="feedback-section">
+            <span class="feedback-title strengths"><i class="fa-solid fa-check"></i> Key Strengths</span>
+            <ul class="feedback-list">${strengthsHtml}</ul>
+        </div>` : ""}
+
+        ${improvementsHtml ? `
+        <div class="feedback-section">
+            <span class="feedback-title improvements"><i class="fa-solid fa-lightbulb"></i> Architectural Nuances</span>
+            <ul class="feedback-list">${improvementsHtml}</ul>
+        </div>` : ""}
+    </div>
+
+    ${evalData.follow_up_question ? `
+    <div class="follow-up-card">
+        <strong><i class="fa-solid fa-circle-question" style="color: var(--accent-indigo);"></i> Interviewer Follow-up:</strong>
+        <p style="margin-top: 4px;">${evalData.follow_up_question}</p>
+    </div>` : ""}
+
+    <!-- MANUAL AI SIMULATION ACTIONS -->
+    <div class="ai-trigger-container">
+        <button class="pill-btn" onclick="window.triggerLiveCurveball(this)" title="Ask Alex to inject a real-time production constraint">
+            <i class="fa-solid fa-bolt-lightning text-amber"></i>
+            <span>Throw Live Curveball</span>
+        </button>
+        <button class="ai-enhance-btn" onclick="window.triggerAIEnhance(this)">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Consult Simulation Interviewer (Alex)</span>
+        </button>
+    </div>
+</div>`;
+
+        appendInterviewerMessage(cardHtml, false);
+
+        if (voiceEnabled && evalData.interviewer_critique) {
+            speakText(evalData.interviewer_critique);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // MANUAL AI SIMULATION INTERVIEWER DEBRIEF
+    // -------------------------------------------------------------------------
+    window.triggerAIEnhance = async function(btn) {
+        if (!apiKey) {
+            apiKey = prompt("Please enter your Gemini API Key to activate the Staff Simulation AI (stored locally in browser):");
+            if (!apiKey) return;
+            localStorage.setItem("oop_gemini_api_key", apiKey);
+            geminiApiKeyInput.value = apiKey;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Alex Rivera is analyzing your simulation trajectory...</span>`;
+
+        try {
+            const res = await fetch("/api/ai-enhance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    api_key: apiKey
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.error) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Retry Simulation Debrief</span>`;
+                alert(`Simulation Debrief Note: ${data.error}`);
+                return;
+            }
+
+            btn.parentElement.remove();
+            renderAIAnalysisCard(data.ai_analysis);
+        } catch (err) {
+            console.error("AI debrief failed:", err);
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span>Retry Simulation Debrief</span>`;
+        }
+    };
+
+    function renderAIAnalysisCard(aiData) {
+        const nuancesHtml = (aiData.staff_nuances || []).map(s => 
+            `<li><i class="fa-solid fa-compass" style="color: #c084fc;"></i> <span>${s}</span></li>`
+        ).join("");
+
+        const aiCardHtml = `
+<div class="ai-analysis-card">
+    <div class="ai-analysis-header">
+        <div class="ai-header-left">
+            <div class="ai-spark-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="ai-header-titles">
+                <h4>Alex Rivera — Staff Simulation Debrief</h4>
+                <span>Calibrated Candidate Assessment & Seniority Radar</span>
+            </div>
+        </div>
+        <div class="hiring-verdict-badge">
+            ${aiData.hiring_verdict || "Hire"}
+        </div>
+    </div>
+
+    <div class="ai-critique-text">
+        ${aiData.ai_critique}
+    </div>
+
+    ${aiData.key_architectural_insight ? `
+    <div class="ai-insight-box">
+        <strong>💡 Core Architectural Takeaway:</strong> ${aiData.key_architectural_insight}
+    </div>` : ""}
+
+    ${nuancesHtml ? `
+    <div class="feedback-section">
+        <span class="feedback-title" style="color: #c084fc;"><i class="fa-solid fa-layer-group"></i> Staff-Level Subtleties & Edge Cases:</span>
+        <ul class="ai-suggestions-list">${nuancesHtml}</ul>
+    </div>` : ""}
+
+    ${aiData.curveball_challenge ? `
+    <div class="curveball-box" style="margin-top: 6px;">
+        <div class="curveball-header">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Interviewer In-Flight Constraint:</span>
+        </div>
+        <p class="curveball-body">${aiData.curveball_challenge}</p>
+    </div>` : ""}
+
+    ${aiData.probing_follow_up ? `
+    <div class="follow-up-card" style="border-color: rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.08);">
+        <strong><i class="fa-solid fa-comments text-accent"></i> Deep-Dive Follow-up Question:</strong>
+        <p style="margin-top: 4px; color: #f3e8ff;">${aiData.probing_follow_up}</p>
+    </div>` : ""}
+</div>`;
+
+        appendInterviewerMessage(aiCardHtml, false);
+
+        if (voiceEnabled && aiData.ai_critique) {
+            speakText(aiData.ai_critique);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // LIVE CURVEBALL INJECTION
+    // -------------------------------------------------------------------------
+    window.triggerLiveCurveball = async function(btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Inoculating constraint...`;
+
+        try {
+            const res = await fetch("/api/curveball", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    api_key: apiKey
+                })
+            });
+
+            const data = await res.json();
+            btn.parentElement.remove();
+
+            if (data.curveball) {
+                const cbHtml = `
+<div class="curveball-box" style="animation: bannerPop 0.3s ease;">
+    <div class="curveball-header">
+        <i class="fa-solid fa-bolt-lightning text-amber"></i>
+        <span>${data.curveball.title || "Live Production Constraint"}:</span>
+    </div>
+    <p class="curveball-body">${data.curveball.challenge}</p>
+</div>`;
+                appendInterviewerMessage(cbHtml, false);
+
+                if (voiceEnabled) {
+                    speakText(`Interviewer twist: ${data.curveball.challenge}`);
+                }
+            }
+        } catch (err) {
+            console.error("Curveball failed:", err);
+            btn.disabled = false;
+        }
+    };
+
+    sidebarCurveballBtn.addEventListener("click", () => {
+        window.triggerLiveCurveball(sidebarCurveballBtn);
+    });
+
+    // -------------------------------------------------------------------------
+    // SIMULATION COMPLETION & ADAPTIVE SCORECARD
+    // -------------------------------------------------------------------------
+    function handleInterviewCompletion() {
+        if (typeof confetti === "function") {
+            confetti({
+                particleCount: 110,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+        }
+
+        appendInterviewerMessage(`### 🏁 Adaptive Simulation Concluded!
+Outstanding endurance! You have completed the **Adaptive Interview Challenge**. I have compiled your calibrated hiring recommendation, seniority tier, Elo progression, and domain breakdown into your **Simulation Scorecard**.
+
+Click **"Scorecard"** in the top navigation to view your comprehensive assessment!`);
+
+        setTimeout(openScorecard, 1600);
+    }
+
+    // -------------------------------------------------------------------------
+    // HINTS & MODEL SOLUTIONS
+    // -------------------------------------------------------------------------
+    sidebarHintBtn.addEventListener("click", async () => {
+        try {
+            const res = await fetch(`/api/hint?session_id=${sessionId}`);
+            const data = await res.json();
+            if (data.hint) {
+                appendInterviewerMessage(`💡 **Interviewer Hint #${data.hint_number}:**\n\n${data.hint}`);
+                hintsRemainingBadge.textContent = `${data.remaining_hints} Left`;
+            }
+        } catch (err) {
+            console.error("Hint error:", err);
+        }
+    });
+
+    sidebarModelAnswerBtn.addEventListener("click", async () => {
+        if (!confirm("Would you like to reveal the ideal model solution for the current question?")) return;
+        try {
+            const res = await fetch(`/api/model-answer?session_id=${sessionId}`);
+            const data = await res.json();
+            if (data.model_answer) {
+                appendInterviewerMessage(`### 📖 Model Solution: ${data.title}\n\n${data.model_answer}`);
+            }
+        } catch (err) {
+            console.error("Model answer error:", err);
+        }
+    });
+
+    passBtn.addEventListener("click", () => {
+        answerInput.value = "I am passing on this challenge to review the model solution and analyze the trade-offs.";
+        handleAnswerSubmission();
+    });
+
+    // -------------------------------------------------------------------------
+    // CANDIDATE SCORECARD & DEBRIEF MODAL
+    // -------------------------------------------------------------------------
+    async function openScorecard() {
+        try {
+            const res = await fetch(`/api/report?session_id=${sessionId}`);
+            const report = await res.json();
+            if (report.error) {
+                alert(report.error);
+                return;
+            }
+
+            let topicBarsHtml = "";
+            for (const [key, t] of Object.entries(report.topic_breakdown || {})) {
+                const pct = (t.avg_score / 10) * 100;
+                topicBarsHtml += `
+<div class="topic-bar-item">
+    <div class="topic-bar-header">
+        <span>${t.topic_name}</span>
+        <span style="color: var(--accent-indigo);">${t.avg_score} / 10</span>
+    </div>
+    <div class="progress-track">
+        <div class="progress-fill" style="width: ${pct}%;"></div>
+    </div>
+</div>`;
+            }
+
+            let trajectoryHtml = (report.trajectory || []).filter(item => item.question_index > 0).map(tr => `
+<div class="trajectory-item">
+    <div>
+        <strong>Q${tr.question_index}: Level ${tr.level} (${tr.tier})</strong>
+        <p style="font-size: 0.74rem; color: var(--text-muted);">${tr.reason}</p>
+    </div>
+    <div style="text-align: right; font-family: var(--font-mono);">
+        <span style="color: ${tr.score >= 7.5 ? 'var(--accent-emerald)' : 'var(--accent-amber)'}; font-weight: 700;">Score: ${tr.score}/10</span>
+        <div style="font-size: 0.72rem; color: var(--accent-cyan);">${tr.skill_rating} Rating</div>
+    </div>
+</div>`).join("");
+
+            let turnsHtml = (report.detailed_turns || []).map((turn, i) => `
+<div class="eval-card" style="margin-top: 12px;">
+    <div class="eval-card-header">
+        <strong>Q${i + 1}: ${turn.question_title} [${turn.difficulty}]</strong>
+        <span class="score-display">
+            <span class="score-value" style="font-size: 1.3rem;">${turn.evaluation.score}</span>
+            <span class="score-denominator">/ 10</span>
+        </span>
+    </div>
+    <p style="font-size: 0.84rem; color: var(--text-secondary); margin: 6px 0;">
+        <strong>Your Answer:</strong> "${turn.candidate_answer.substring(0, 150)}${turn.candidate_answer.length > 150 ? '...' : ''}"
+    </p>
+    <p style="font-size: 0.85rem; color: #cbd5e1;">
+        <strong>Interviewer Debrief:</strong> ${turn.evaluation.interviewer_critique}
+    </p>
+</div>`).join("");
+
+            scorecardBody.innerHTML = `
+<div class="scorecard-banner">
+    <div class="scorecard-calibrated-level">
+        ${report.calibrated_level}
+    </div>
+    <div class="scorecard-verdict" style="color: ${report.badge_color};">
+        ${report.verdict}
+    </div>
+    <div class="scorecard-score-big">
+        ${report.final_skill_rating} <span style="font-size: 1.2rem; color: var(--text-muted);">Rating (Peak: ${report.peak_skill_rating})</span>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.92rem; max-width: 650px; margin: 0 auto;">
+        ${report.hiring_summary}
+    </p>
+    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 10px;">
+        Avg Score: ${report.overall_score}/10 | Highest Bracket: ${report.highest_tier_reached} | Duration: ${report.total_duration_formatted}
+    </div>
+</div>
+
+<h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+    Adaptive Difficulty Progression & Elo Trajectory
+</h4>
+<div class="trajectory-timeline">
+    ${trajectoryHtml}
+</div>
+
+<h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 10px 0;">
+    Domain Competency Radar
+</h4>
+<div class="topic-bars-grid">
+    ${topicBarsHtml}
+</div>
+
+<h4 style="font-size: 0.82rem; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 10px 0;">
+    Detailed Challenge Log
+</h4>
+<div class="detailed-turns-list">
+    ${turnsHtml}
+</div>`;
+
+            scorecardModal.style.display = "flex";
+
+            scorecardModal.dataset.markdown = `# Adaptive Interview Challenge — Simulation Scorecard
+**Calibrated Level:** ${report.calibrated_level}
+**Verdict:** ${report.verdict}
+**Final Skill Rating:** ${report.final_skill_rating} (Peak: ${report.peak_skill_rating})
+**Average Score:** ${report.overall_score} / 10
+**Duration:** ${report.total_duration_formatted}
+
+### Hiring Committee Debrief:
+${report.hiring_summary}
+
+### Question Breakdown:
+${(report.detailed_turns || []).map((t, idx) => `
+#### ${idx + 1}. ${t.question_title} [${t.difficulty}] (Score: ${t.evaluation.score}/10)
+- **Answer:** ${t.candidate_answer}
+- **Debrief:** ${t.evaluation.interviewer_critique}
+`).join("\n")}`;
+
+        } catch (err) {
+            console.error("Scorecard error:", err);
+        }
+    }
+
+    copyReportBtn.addEventListener("click", () => {
+        const md = scorecardModal.dataset.markdown;
+        if (md) {
+            navigator.clipboard.writeText(md);
+            copyReportBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            setTimeout(() => {
+                copyReportBtn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy Markdown Report';
+            }, 2000);
+        }
+    });
+
+    finishInterviewBtn.addEventListener("click", openScorecard);
+    closeScorecardModal.addEventListener("click", () => scorecardModal.style.display = "none");
+    restartFromScorecardBtn.addEventListener("click", () => {
+        scorecardModal.style.display = "none";
+        settingsModal.style.display = "flex";
+    });
+
+    // -------------------------------------------------------------------------
+    // UI HELPERS (ROADMAP, CHAT, TIMER)
+    // -------------------------------------------------------------------------
+    function renderRoadmap() {
+        questionRoadmapList.innerHTML = questionsRoadmap.map(q => `
+<li class="roadmap-item ${q.status}">
+    <span class="roadmap-status-icon">
+        ${q.status === 'completed' ? '<i class="fa-solid fa-check"></i>' : 
+          q.status === 'active' ? '<i class="fa-solid fa-terminal"></i>' : 
+          '<i class="fa-regular fa-circle"></i>'}
+    </span>
+    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;">
+        ${q.title}
+    </span>
+    ${q.score !== null ? `<span class="roadmap-score-pill">${q.score}</span>` : ''}
+</li>`).join("");
+    }
+
+    function updateProgress(current, total) {
+        metaProgress.textContent = `${current} / ${total}`;
+        const pct = Math.round((current / total) * 100);
+        progressBarFill.style.width = `${pct}%`;
+    }
+
+    function appendInterviewerMessage(markdownText, parseMarkdown = true) {
+        const row = document.createElement("div");
+        row.className = "message-row interviewer";
+        const html = parseMarkdown && typeof marked !== "undefined" ? marked.parse(markdownText) : markdownText;
+
+        row.innerHTML = `
+<div class="msg-avatar">
+    <img src="https://api.dicebear.com/7.x/bottts/svg?seed=AlexRiveraOOP&backgroundColor=1e293b" alt="Alex">
+</div>
+<div class="msg-content">
+    <div class="msg-header">
+        <span class="msg-sender">Alex Rivera</span>
+        <span>• Staff Simulation Lead</span>
+    </div>
+    <div class="msg-bubble">${html}</div>
+</div>`;
+
+        messagesContainer.appendChild(row);
+        scrollToBottom();
+
+        row.querySelectorAll("pre code").forEach(block => {
+            if (window.hljs) hljs.highlightElement(block);
+        });
+
+        return row;
+    }
+
+    function appendCandidateMessage(text) {
+        const row = document.createElement("div");
+        row.className = "message-row candidate";
+        const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const formatted = escaped.replace(/\n/g, "<br>");
+
+        row.innerHTML = `
+<div class="msg-avatar">
+    <img src="https://api.dicebear.com/7.x/identicon/svg?seed=CandidateUser" alt="You">
+</div>
+<div class="msg-content">
+    <div class="msg-header" style="justify-content: flex-end;">
+        <span>You (Candidate)</span>
+    </div>
+    <div class="msg-bubble">${formatted}</div>
+</div>`;
+
+        messagesContainer.appendChild(row);
+        scrollToBottom();
+        return row;
+    }
+
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timerSeconds++;
+            const mins = String(Math.floor(timerSeconds / 60)).padStart(2, "0");
+            const secs = String(timerSeconds % 60).padStart(2, "0");
+            timerDisplay.textContent = `${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function resetTimer() {
+        stopTimer();
+        timerSeconds = 0;
+        timerDisplay.textContent = "00:00";
+    }
+
+    function updateCharCount() {
+        const words = answerInput.value.trim().split(/\s+/).filter(Boolean).length;
+        charCount.textContent = `${words} words`;
+    }
+
+    // -------------------------------------------------------------------------
+    // SPEECH RECOGNITION (STT) & SPEECH SYNTHESIS (TTS)
+    // -------------------------------------------------------------------------
+    function initSpeechRecognition() {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) {
+            micBtn.style.display = "none";
+            return;
+        }
+
+        recognition = new SpeechRec();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-US";
+
+        recognition.onstart = () => {
+            isRecording = true;
+            micBtn.classList.add("recording");
+            micBtn.querySelector(".mic-label").textContent = "Listening...";
+        };
+
+        recognition.onresult = (event) => {
+            let transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                transcript += event.results[i][0].transcript;
+            }
+            answerInput.value = (answerInput.value + " " + transcript).trim();
+            updateCharCount();
+        };
+
+        recognition.onerror = () => stopRecording();
+        recognition.onend = () => stopRecording();
+
+        micBtn.addEventListener("click", () => {
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+    }
+
+    function stopRecording() {
+        isRecording = false;
+        micBtn.classList.remove("recording");
+        micBtn.querySelector(".mic-label").textContent = "Dictate";
+    }
+
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+
+        const cleanText = text.replace(/<[^>]*>/g, '').replace(/[*_#`]/g, '');
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 1.05;
+
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(v => v.lang.startsWith("en") && (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Guy") || v.name.includes("David")));
+        if (preferred) utterance.voice = preferred;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    voiceToggleBtn.addEventListener("click", () => {
+        voiceEnabled = !voiceEnabled;
+        voiceToggleBtn.classList.toggle("active", voiceEnabled);
+        if (!voiceEnabled && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+    });
+
+    // -------------------------------------------------------------------------
+    // EVENT LISTENERS
+    // -------------------------------------------------------------------------
+    submitBtn.addEventListener("click", handleAnswerSubmission);
+
+    answerInput.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            handleAnswerSubmission();
+        }
+    });
+
+    answerInput.addEventListener("input", updateCharCount);
+
+    insertCodeSnippetBtn.addEventListener("click", () => {
+        const snippetTemplate = "\n```python\nclass Solution:\n    def example(self):\n        pass\n```\n";
+        answerInput.value += snippetTemplate;
+        answerInput.focus();
+        updateCharCount();
+    });
+
+    settingsBtn.addEventListener("click", () => settingsModal.style.display = "flex");
+    closeSettingsModal.addEventListener("click", () => settingsModal.style.display = "none");
+    cancelSettingsBtn.addEventListener("click", () => settingsModal.style.display = "none");
+    newInterviewBtn.addEventListener("click", () => settingsModal.style.display = "flex");
+
+    applySettingsBtn.addEventListener("click", () => {
+        settingsModal.style.display = "none";
+        startNewSession();
+    });
+
+    cheatSheetBtn.addEventListener("click", () => cheatSheetDrawer.style.display = "flex");
+    closeCheatSheetDrawer.addEventListener("click", () => cheatSheetDrawer.style.display = "none");
+    cheatSheetDrawer.addEventListener("click", (e) => {
+        if (e.target === cheatSheetDrawer) cheatSheetDrawer.style.display = "none";
+    });
+});
+
+</script>
 </body>
 </html>
