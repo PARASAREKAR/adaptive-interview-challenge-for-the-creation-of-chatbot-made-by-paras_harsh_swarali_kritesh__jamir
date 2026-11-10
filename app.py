@@ -11,7 +11,7 @@ import sys
 import webbrowser
 import threading
 import socket
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from knowledge_base import TOPICS, DIFFICULTIES, QUESTIONS
 from interview_session import AdaptiveInterviewSession
 from evaluator import generate_ai_curveball
@@ -37,8 +37,22 @@ def find_available_port(start_port=5000, max_attempts=20):
 
 
 @app.route("/")
+@app.route("/api/index")
+@app.route("/api/index.py")
+@app.route("/api")
+@app.route("/api/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/static/<path:filename>")
+def serve_static(filename):
+    return send_from_directory(os.path.join(BASE_DIR, "static"), filename)
+
+
+@app.route("/favicon.ico")
+def favicon():
+    return ("", 204)
 
 
 @app.route("/api/config", methods=["GET"])
