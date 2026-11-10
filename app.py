@@ -12,6 +12,7 @@ import webbrowser
 import threading
 import socket
 from flask import Flask, request, jsonify, render_template, send_from_directory
+from werkzeug.middleware.proxy_fix import ProxyFix
 from knowledge_base import TOPICS, DIFFICULTIES, QUESTIONS
 from interview_session import AdaptiveInterviewSession
 from evaluator import generate_ai_curveball
@@ -22,6 +23,24 @@ app = Flask(
     static_folder=os.path.join(BASE_DIR, "static"),
     template_folder=os.path.join(BASE_DIR, "templates")
 )
+
+
+class AppWSGIMiddleware:
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get("PATH_INFO", "")
+        if path.startswith("/app.py"):
+            environ["PATH_INFO"] = path[len("/app.py"):] or "/"
+        elif path.startswith("/api/index.py"):
+            environ["PATH_INFO"] = path[len("/api/index.py"):] or "/"
+        elif path.startswith("/api/index"):
+            environ["PATH_INFO"] = path[len("/api/index"):] or "/"
+        return self.wsgi_app(environ, start_response)
+
+
+app.wsgi_app = AppWSGIMiddleware(ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1))
 
 # In-memory session store
 sessions = {}
@@ -37,10 +56,6 @@ def find_available_port(start_port=5000, max_attempts=20):
 
 
 @app.route("/")
-@app.route("/api/index")
-@app.route("/api/index.py")
-@app.route("/api")
-@app.route("/api/")
 def index():
     return render_template("index.html")
 
